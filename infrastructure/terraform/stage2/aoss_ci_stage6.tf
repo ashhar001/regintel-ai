@@ -1,3 +1,4 @@
+# Stage 6 CI: grants the GitHub Terraform plan role access required for PR validation.
 # The OpenSearch provider performs data-plane reads while refreshing the vector
 # index during Terraform plan. This separate policy is additive and avoids
 # changing the Stage 2 Bedrock/administrator access policy.
