@@ -11,3 +11,16 @@ htmlcov/
 terraform.tfstate*
 .terraform/
 *.tfplan
+**/.terraform/
+*.tfstate
+*.tfstate.*
+.stage6.backend.hcl
+
+infrastructure/terraform/stage2/terraform.tfvars
+infrastructure/terraform/bootstrap-stage6/terraform.tfvars
+infrastructure/terraform/stage2/state-backups/
+
+evaluation/results/*-latest.json
+evaluation/results/*-latest.md
+
+infrastructure/terraform/stage2/terraform-state-pre-stage6-backup.json

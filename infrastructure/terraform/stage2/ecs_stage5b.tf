@@ -180,7 +180,7 @@ resource "aws_ecs_service" "stage5b_api" {
   }
 
   health_check_grace_period_seconds = 60
-  enable_execute_command             = false
+  enable_execute_command            = false
 
   lifecycle {
     # desired_count is controlled by autoscaling; task_definition revisions are

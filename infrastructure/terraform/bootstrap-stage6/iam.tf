@@ -138,9 +138,9 @@ data "aws_iam_policy_document" "github_deploy" {
   # Restricted to KMS keys in this AWS account. The release gate needs decrypt
   # access because the RegIntel Guardrail is encrypted with the data CMK.
   statement {
-    sid       = "DecryptRegIntelGuardrail"
-    effect    = "Allow"
-    actions   = ["kms:Decrypt"]
+    sid     = "DecryptRegIntelGuardrail"
+    effect  = "Allow"
+    actions = ["kms:Decrypt"]
     resources = [
       "arn:${data.aws_partition.current.partition}:kms:${var.aws_region}:${data.aws_caller_identity.current.account_id}:key/*",
     ]

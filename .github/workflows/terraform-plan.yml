@@ -52,10 +52,12 @@ jobs:
         working-directory: infrastructure/terraform/stage2
         run: |
           terraform plan -input=false -no-color \
-            -var='aws_profile=' \
-            -var="aoss_admin_principal_arn=${{ vars.AOSS_ADMIN_PRINCIPAL_ARN }}" \
-            -var="stage6_ci_role_arn=${{ vars.AWS_TERRAFORM_PLAN_ROLE_ARN }}" \
-            -out=stage6-pr.tfplan
+             -var='aws_profile=' \
+             -var="aoss_admin_principal_arn=${{ vars.AOSS_ADMIN_PRINCIPAL_ARN }}" \
+             -var="stage6_ci_role_arn=${{ vars.AWS_TERRAFORM_PLAN_ROLE_ARN }}" \
+             -var="stage5b_runtime_enabled=${{ vars.STAGE5B_RUNTIME_ENABLED }}" \
+             -var="stage5b_image_tag=${{ vars.STAGE5B_IMAGE_TAG }}" \
+             -out=stage6-pr.tfplan
           terraform show -json stage6-pr.tfplan > stage6-pr.json
 
       - name: Block destructive changes

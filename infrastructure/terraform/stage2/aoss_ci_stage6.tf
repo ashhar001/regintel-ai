@@ -2,7 +2,7 @@
 # index during Terraform plan. This separate policy is additive and avoids
 # changing the Stage 2 Bedrock/administrator access policy.
 resource "aws_opensearchserverless_access_policy" "stage6_ci" {
-  count = var.stage6_ci_role_arn != null && trimspace(var.stage6_ci_role_arn) != "" ? 1 : 0
+  count = try(trimspace(var.stage6_ci_role_arn), "") != "" ? 1 : 0
 
   name        = substr("${local.name_prefix}-ci", 0, 32)
   type        = "data"
