@@ -5,7 +5,7 @@ import argparse
 import json
 import time
 import uuid
-from datetime import date
+from datetime import datetime, timezone
 from pathlib import Path
 
 import boto3
@@ -42,6 +42,7 @@ def main() -> None:
 
         source_key = f"incoming/documents/{filename}"
         manifest_key = f"incoming/manifests/{Path(filename).stem}-{uuid.uuid4().hex[:10]}.manifest.json"
+        current_date = datetime.now(timezone.utc).date().isoformat()
         manifest = {
             "document_id": document_id,
             "title": source.stem.replace("-", " ").title(),
@@ -50,8 +51,8 @@ def main() -> None:
             "document_type": "guidance",
             "topic": topic,
             "entity_type": "regulated_institution",
-            "publication_date": date.today().isoformat(),
-            "effective_date": date.today().isoformat(),
+            "publication_date": current_date,
+            "effective_date": current_date,
             "source_key": source_key,
         }
 

@@ -1,3 +1,5 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.core.config import Settings, get_settings
@@ -13,15 +15,20 @@ from app.services.knowledge_base import BedrockKnowledgeBaseError, BedrockKnowle
 
 router = APIRouter(prefix="/v1/rag", tags=["rag"])
 
+SettingsDep = Annotated[Settings, Depends(get_settings)]
 
-def get_kb_service(settings: Settings = Depends(get_settings)) -> BedrockKnowledgeBaseService:
+
+def get_kb_service(settings: SettingsDep) -> BedrockKnowledgeBaseService:
     return BedrockKnowledgeBaseService(settings)
+
+
+KnowledgeBaseServiceDep = Annotated[BedrockKnowledgeBaseService, Depends(get_kb_service)]
 
 
 @router.post("/retrieve", response_model=RagRetrieveResponse)
 def retrieve(
     request: RagRetrieveRequest,
-    service: BedrockKnowledgeBaseService = Depends(get_kb_service),
+    service: KnowledgeBaseServiceDep,
 ) -> RagRetrieveResponse:
     try:
         result = service.retrieve(
@@ -45,7 +52,7 @@ def retrieve(
 @router.post("/query", response_model=RagQueryResponse)
 def query(
     request: RagQueryRequest,
-    service: BedrockKnowledgeBaseService = Depends(get_kb_service),
+    service: KnowledgeBaseServiceDep,
 ) -> RagQueryResponse:
     try:
         result = service.query(
