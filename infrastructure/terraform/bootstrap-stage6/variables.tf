@@ -61,3 +61,15 @@ variable "state_key" {
   description = "Remote-state object key for the main RegIntel stack."
   default     = "regintel/stage2/terraform.tfstate"
 }
+
+variable "github_owner_id" {
+  type        = string
+  description = "Stable numeric GitHub owner/user/organization ID used in customized OIDC subject claims."
+  default     = null
+}
+
+variable "github_repository_id" {
+  type        = string
+  description = "Stable numeric GitHub repository ID used in customized OIDC subject claims."
+  default     = null
+}
