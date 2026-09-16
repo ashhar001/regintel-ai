@@ -1,0 +1,9 @@
+# Merge these lines into the repository .gitignore if not already present.
+**/.terraform/
+*.tfplan
+*.tfstate
+*.tfstate.*
+.stage6.backend.hcl
+infrastructure/terraform/stage2/state-backups/
+evaluation/results/*-latest.json
+evaluation/results/*-latest.md

@@ -1,0 +1,4 @@
+RegIntel Batch Monitoring Operations Manual
+Status: Synthetic evaluation document. Not real regulation.
+
+Overnight transaction-monitoring batches must complete before the next processing window. Failed monitoring batches must be rerun within four hours. These operational batch timings do not change the compliance deadline for reviewing generated alerts.

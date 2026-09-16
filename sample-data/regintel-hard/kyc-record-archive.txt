@@ -1,0 +1,4 @@
+RegIntel KYC Archive Operations Standard
+Status: Synthetic evaluation document. Not real regulation.
+
+Archived customer onboarding packages are moved to cold storage after account closure. Archive operations may occur after twelve months, but the underlying verification records remain subject to the formal regulatory retention period defined elsewhere.

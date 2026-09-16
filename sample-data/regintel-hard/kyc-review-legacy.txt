@@ -1,0 +1,4 @@
+RegIntel KYC Legacy Review Schedule
+Status: Synthetic evaluation document. Not real regulation.
+
+Under a retired review schedule, high-risk customers were reviewed every eighteen months and standard-risk customers every thirty-six months. This historical document is maintained only for regression testing and audit comparison.

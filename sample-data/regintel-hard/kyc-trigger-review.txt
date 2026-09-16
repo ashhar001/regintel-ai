@@ -1,0 +1,4 @@
+RegIntel KYC Event-Driven Review Guidance
+Status: Synthetic evaluation document. Not real regulation.
+
+Material ownership changes, sanctions matches, or significant risk events trigger an out-of-cycle customer review. Event-driven reviews supplement, but do not replace, the periodic review schedule defined in the current customer verification policy.

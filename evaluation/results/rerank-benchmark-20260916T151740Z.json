@@ -1,0 +1,264 @@
+{
+  "generated_at": "2026-09-16T15:16:20.375377+00:00",
+  "dataset": "evaluation/datasets/regintel_hard_gold.jsonl",
+  "configurations": [
+    {
+      "name": "semantic-k5",
+      "metrics": {
+        "hit_at_k": 1.0,
+        "mrr": 0.7291666666666666,
+        "answer_keyword_coverage": 1.0,
+        "citation_doc_accuracy": 1.0,
+        "retrieve_avg_ms": 1373.25,
+        "retrieve_p95_ms": 1489.8,
+        "rag_avg_ms": 1844.625
+      },
+      "cases": [
+        {
+          "id": "aml-current-alert-deadline",
+          "rr": 1.0,
+          "hit": true,
+          "answer": 1.0,
+          "citation": true,
+          "retrieve_ms": 1469,
+          "rag_ms": 1923
+        },
+        {
+          "id": "aml-initial-review-vs-escalation",
+          "rr": 1.0,
+          "hit": true,
+          "answer": 1.0,
+          "citation": true,
+          "retrieve_ms": 1453,
+          "rag_ms": 1931
+        },
+        {
+          "id": "aml-unexplained-alert-action",
+          "rr": 0.5,
+          "hit": true,
+          "answer": 1.0,
+          "citation": true,
+          "retrieve_ms": 1351,
+          "rag_ms": 1700
+        },
+        {
+          "id": "aml-audit-evidence",
+          "rr": 0.3333333333333333,
+          "hit": true,
+          "answer": 1.0,
+          "citation": true,
+          "retrieve_ms": 1330,
+          "rag_ms": 1828
+        },
+        {
+          "id": "kyc-current-high-risk-frequency",
+          "rr": 1.0,
+          "hit": true,
+          "answer": 1.0,
+          "citation": true,
+          "retrieve_ms": 1501,
+          "rag_ms": 1829
+        },
+        {
+          "id": "kyc-current-standard-frequency",
+          "rr": 0.5,
+          "hit": true,
+          "answer": 1.0,
+          "citation": true,
+          "retrieve_ms": 1306,
+          "rag_ms": 1882
+        },
+        {
+          "id": "kyc-formal-retention",
+          "rr": 0.5,
+          "hit": true,
+          "answer": 1.0,
+          "citation": true,
+          "retrieve_ms": 1253,
+          "rag_ms": 1744
+        },
+        {
+          "id": "kyc-enhanced-review-approval",
+          "rr": 1.0,
+          "hit": true,
+          "answer": 1.0,
+          "citation": true,
+          "retrieve_ms": 1323,
+          "rag_ms": 1920
+        }
+      ]
+    },
+    {
+      "name": "hybrid-k5",
+      "metrics": {
+        "hit_at_k": 1.0,
+        "mrr": 0.7291666666666666,
+        "answer_keyword_coverage": 1.0,
+        "citation_doc_accuracy": 1.0,
+        "retrieve_avg_ms": 1358.5,
+        "retrieve_p95_ms": 1436.85,
+        "rag_avg_ms": 1793.25
+      },
+      "cases": [
+        {
+          "id": "aml-current-alert-deadline",
+          "rr": 1.0,
+          "hit": true,
+          "answer": 1.0,
+          "citation": true,
+          "retrieve_ms": 1307,
+          "rag_ms": 1736
+        },
+        {
+          "id": "aml-initial-review-vs-escalation",
+          "rr": 0.5,
+          "hit": true,
+          "answer": 1.0,
+          "citation": true,
+          "retrieve_ms": 1302,
+          "rag_ms": 1791
+        },
+        {
+          "id": "aml-unexplained-alert-action",
+          "rr": 0.5,
+          "hit": true,
+          "answer": 1.0,
+          "citation": true,
+          "retrieve_ms": 1440,
+          "rag_ms": 1820
+        },
+        {
+          "id": "aml-audit-evidence",
+          "rr": 0.3333333333333333,
+          "hit": true,
+          "answer": 1.0,
+          "citation": true,
+          "retrieve_ms": 1431,
+          "rag_ms": 2117
+        },
+        {
+          "id": "kyc-current-high-risk-frequency",
+          "rr": 1.0,
+          "hit": true,
+          "answer": 1.0,
+          "citation": true,
+          "retrieve_ms": 1346,
+          "rag_ms": 1667
+        },
+        {
+          "id": "kyc-current-standard-frequency",
+          "rr": 1.0,
+          "hit": true,
+          "answer": 1.0,
+          "citation": true,
+          "retrieve_ms": 1398,
+          "rag_ms": 1735
+        },
+        {
+          "id": "kyc-formal-retention",
+          "rr": 0.5,
+          "hit": true,
+          "answer": 1.0,
+          "citation": true,
+          "retrieve_ms": 1356,
+          "rag_ms": 1683
+        },
+        {
+          "id": "kyc-enhanced-review-approval",
+          "rr": 1.0,
+          "hit": true,
+          "answer": 1.0,
+          "citation": true,
+          "retrieve_ms": 1288,
+          "rag_ms": 1797
+        }
+      ]
+    },
+    {
+      "name": "hybrid-rerank-20to5",
+      "metrics": {
+        "hit_at_k": 1.0,
+        "mrr": 0.7291666666666666,
+        "answer_keyword_coverage": 1.0,
+        "citation_doc_accuracy": 1.0,
+        "retrieve_avg_ms": 1419.875,
+        "retrieve_p95_ms": 1811.5,
+        "rag_avg_ms": 1782.625
+      },
+      "cases": [
+        {
+          "id": "aml-current-alert-deadline",
+          "rr": 1.0,
+          "hit": true,
+          "answer": 1.0,
+          "citation": true,
+          "retrieve_ms": 1934,
+          "rag_ms": 1906
+        },
+        {
+          "id": "aml-initial-review-vs-escalation",
+          "rr": 0.5,
+          "hit": true,
+          "answer": 1.0,
+          "citation": true,
+          "retrieve_ms": 1584,
+          "rag_ms": 1653
+        },
+        {
+          "id": "aml-unexplained-alert-action",
+          "rr": 0.5,
+          "hit": true,
+          "answer": 1.0,
+          "citation": true,
+          "retrieve_ms": 1322,
+          "rag_ms": 1737
+        },
+        {
+          "id": "aml-audit-evidence",
+          "rr": 0.3333333333333333,
+          "hit": true,
+          "answer": 1.0,
+          "citation": true,
+          "retrieve_ms": 1252,
+          "rag_ms": 2086
+        },
+        {
+          "id": "kyc-current-high-risk-frequency",
+          "rr": 1.0,
+          "hit": true,
+          "answer": 1.0,
+          "citation": true,
+          "retrieve_ms": 1337,
+          "rag_ms": 1675
+        },
+        {
+          "id": "kyc-current-standard-frequency",
+          "rr": 1.0,
+          "hit": true,
+          "answer": 1.0,
+          "citation": true,
+          "retrieve_ms": 1238,
+          "rag_ms": 1803
+        },
+        {
+          "id": "kyc-formal-retention",
+          "rr": 0.5,
+          "hit": true,
+          "answer": 1.0,
+          "citation": true,
+          "retrieve_ms": 1417,
+          "rag_ms": 1726
+        },
+        {
+          "id": "kyc-enhanced-review-approval",
+          "rr": 1.0,
+          "hit": true,
+          "answer": 1.0,
+          "citation": true,
+          "retrieve_ms": 1275,
+          "rag_ms": 1675
+        }
+      ]
+    }
+  ]
+}

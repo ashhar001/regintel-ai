@@ -1,0 +1,40 @@
+{
+  "metadataAttributes": {
+    "document_id": {
+      "value": {"type": "STRING", "stringValue": "REGINTEL-TEST-001"},
+      "includeForEmbedding": false
+    },
+    "regulator": {
+      "value": {"type": "STRING", "stringValue": "REGINTEL_TEST"},
+      "includeForEmbedding": true
+    },
+    "jurisdiction": {
+      "value": {"type": "STRING", "stringValue": "TEST"},
+      "includeForEmbedding": true
+    },
+    "document_type": {
+      "value": {"type": "STRING", "stringValue": "policy"},
+      "includeForEmbedding": false
+    },
+    "topic": {
+      "value": {"type": "STRING", "stringValue": "KYC"},
+      "includeForEmbedding": true
+    },
+    "entity_type": {
+      "value": {"type": "STRING", "stringValue": "regulated_institution"},
+      "includeForEmbedding": false
+    },
+    "publication_date": {
+      "value": {"type": "STRING", "stringValue": "2026-09-16"},
+      "includeForEmbedding": false
+    },
+    "publication_epoch": {
+      "value": {"type": "NUMBER", "numberValue": 1789516800},
+      "includeForEmbedding": false
+    },
+    "effective_date": {
+      "value": {"type": "STRING", "stringValue": "2026-09-16"},
+      "includeForEmbedding": false
+    }
+  }
+}

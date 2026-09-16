@@ -1,0 +1,4 @@
+RegIntel AML Investigation Record Retention Standard
+Status: Synthetic evaluation document. Not real regulation.
+
+Completed AML investigation cases and supporting evidence must be retained for six years after case closure. The retention requirement applies to investigation records and does not specify how quickly transaction monitoring alerts must be reviewed.

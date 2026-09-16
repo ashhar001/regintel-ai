@@ -1,0 +1,15 @@
+aws_region  = "us-east-1"
+aws_profile = "tenderly"
+
+github_owner      = "YOUR_GITHUB_USERNAME_OR_ORG"
+github_repository = "regintel-ai"
+github_branch     = "main"
+github_environment = "production"
+
+# If token.actions.githubusercontent.com already exists as an IAM OIDC provider,
+# set its ARN here instead of creating a duplicate provider.
+# github_oidc_provider_arn = "arn:aws:iam::123456789012:oidc-provider/token.actions.githubusercontent.com"
+
+# Optional overrides:
+# state_bucket_name = "my-regintel-terraform-state"
+# state_key         = "regintel/stage2/terraform.tfstate"

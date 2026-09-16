@@ -1,0 +1,85 @@
+name: Terraform Plan
+
+on:
+  pull_request:
+    paths:
+      - 'infrastructure/terraform/**'
+      - '.github/workflows/terraform-plan.yml'
+      - 'scripts/check_terraform_plan.py'
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: terraform-plan-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  TF_IN_AUTOMATION: 'true'
+
+jobs:
+  plan:
+    name: Plan and destructive-change gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Configure AWS credentials using GitHub OIDC
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_TERRAFORM_PLAN_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: '1.16.0'
+          terraform_wrapper: false
+
+      - name: Terraform init
+        working-directory: infrastructure/terraform/stage2
+        run: |
+          terraform init -input=false \
+            -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}" \
+            -backend-config="key=${{ vars.TF_STATE_KEY }}" \
+            -backend-config="region=${{ vars.AWS_REGION }}" \
+            -backend-config="use_lockfile=true"
+
+      - name: Terraform plan
+        working-directory: infrastructure/terraform/stage2
+        run: |
+          terraform plan -input=false -no-color \
+            -var='aws_profile=' \
+            -var="aoss_admin_principal_arn=${{ vars.AOSS_ADMIN_PRINCIPAL_ARN }}" \
+            -var="stage6_ci_role_arn=${{ vars.AWS_TERRAFORM_PLAN_ROLE_ARN }}" \
+            -out=stage6-pr.tfplan
+          terraform show -json stage6-pr.tfplan > stage6-pr.json
+
+      - name: Block destructive changes
+        run: python scripts/check_terraform_plan.py infrastructure/terraform/stage2/stage6-pr.json
+
+      - name: Write plan summary
+        if: always()
+        run: |
+          {
+            echo '## Terraform plan'
+            echo
+            jq -r '
+              [.resource_changes[]? | select(.change.actions != ["no-op"])] as $c |
+              "Changed resources: \($c|length)\n\n" +
+              ($c | map("- `\(.address)`: `\(.change.actions|join(","))`") | join("\n"))
+            ' infrastructure/terraform/stage2/stage6-pr.json 2>/dev/null || true
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # JSON is uploaded for audit/debugging. We intentionally do not upload the
+      # binary plan because plan files can contain sensitive values.
+      - name: Upload sanitized plan JSON
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: terraform-plan-json-${{ github.event.pull_request.number }}
+          path: infrastructure/terraform/stage2/stage6-pr.json
+          retention-days: 7

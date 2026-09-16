@@ -1,0 +1,4 @@
+RegIntel AML Escalation Service Levels
+Status: Synthetic evaluation document. Not real regulation.
+
+An unexplained transaction-monitoring alert must be escalated to an authorized compliance officer after the initial review. Once escalated, the compliance officer should acknowledge the escalation within one business day. This acknowledgement SLA is separate from the initial alert-review deadline.

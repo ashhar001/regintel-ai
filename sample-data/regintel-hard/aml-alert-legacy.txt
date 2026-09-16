@@ -1,0 +1,4 @@
+RegIntel AML Operations Guidance - Legacy Alert Handling
+Status: Synthetic evaluation document. Not real regulation.
+
+Transaction monitoring alerts generated under the legacy workflow were normally reviewed within five business days. Urgent sanctions-related alerts were prioritized separately. This document describes a historical operating procedure and is retained for audit comparison.

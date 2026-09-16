@@ -1,0 +1,4 @@
+RegIntel AML Alert Triage Standard
+Status: Synthetic evaluation document. Not real regulation.
+
+Transaction monitoring alerts are assigned a severity during triage. Critical alerts must enter the compliance review queue immediately. The triage standard does not define the final review completion deadline; that deadline is defined in the regulatory policy.

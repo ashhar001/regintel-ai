@@ -1,0 +1,155 @@
+name: Deploy RegIntel API
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - 'scripts/**'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: regintel-production-deploy
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  IMAGE_TAG: ${{ github.sha }}
+  ECR_REPOSITORY_NAME: ${{ vars.ECR_REPOSITORY_NAME }}
+  ECR_REPOSITORY_URL: ${{ vars.ECR_REPOSITORY_URL }}
+  ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
+  ECS_SERVICE: ${{ vars.ECS_SERVICE }}
+  API_BASE_URL: ${{ vars.API_BASE_URL }}
+
+jobs:
+  quality-and-deploy:
+    name: Quality gate and production deployment
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+
+      - name: Configure AWS credentials using GitHub OIDC
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Install candidate backend
+        run: python -m pip install -e './backend[dev]'
+
+      - name: Unit tests and lint
+        run: |
+          ruff check backend scripts
+          pytest -q backend/tests
+
+      - name: Start candidate API for live Bedrock regression gate
+        env:
+          APP_ENV: ci-release-gate
+          LOG_LEVEL: INFO
+          BEDROCK_MODEL_ID: amazon.nova-lite-v1:0
+          BEDROCK_KNOWLEDGE_BASE_ID: ${{ vars.BEDROCK_KNOWLEDGE_BASE_ID }}
+          BEDROCK_RAG_MODEL_ARN: ${{ vars.BEDROCK_RAG_MODEL_ARN }}
+          BEDROCK_GUARDRAIL_ID: ${{ vars.BEDROCK_GUARDRAIL_ID }}
+          BEDROCK_GUARDRAIL_VERSION: ${{ vars.BEDROCK_GUARDRAIL_VERSION }}
+          BEDROCK_RERANK_MODEL_ARN: ${{ vars.BEDROCK_RERANK_MODEL_ARN }}
+        run: |
+          python -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000 > /tmp/regintel-stage6.log 2>&1 &
+          echo $! > /tmp/regintel-stage6.pid
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:8000/health >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/regintel-stage6.log
+          exit 1
+
+      - name: Hard-corpus RAG regression
+        run: |
+          python scripts/run_local_rag_eval.py \
+            --dataset evaluation/datasets/regintel_hard_gold.jsonl \
+            --base-url http://127.0.0.1:8000 \
+            --matrix HYBRID:5
+          python scripts/check_release_gate.py
+
+      - name: Guardrail regression
+        run: python scripts/check_guardrail_release.py --base-url http://127.0.0.1:8000
+
+      - name: Upload RAG quality evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: rag-release-gate-${{ github.sha }}
+          path: |
+            evaluation/results/local-rag-eval-latest.json
+            evaluation/results/local-rag-eval-latest.md
+            /tmp/regintel-stage6.log
+          if-no-files-found: warn
+          retention-days: 30
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push immutable image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: backend/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ${{ vars.ECR_REPOSITORY_URL }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: true
+          sbom: true
+
+      - name: ECR vulnerability gate
+        env:
+          MAX_CRITICAL: '0'
+        run: scripts/check_ecr_scan.sh
+
+      - name: Deploy task definition revision to ECS
+        env:
+          IMAGE_URI: ${{ vars.ECR_REPOSITORY_URL }}:${{ github.sha }}
+        run: scripts/deploy_ecs_stage6.sh
+
+      - name: Post-deploy public health check
+        run: |
+          for i in {1..20}; do
+            if curl -fsS "${API_BASE_URL}/health"; then
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "Production health check failed."
+          exit 1
+
+      - name: Deployment summary
+        if: success()
+        run: |
+          {
+            echo '## RegIntel deployment succeeded'
+            echo
+            echo "- Image: \`${ECR_REPOSITORY_URL}:${IMAGE_TAG}\`"
+            echo "- ECS cluster: \`${ECS_CLUSTER}\`"
+            echo "- ECS service: \`${ECS_SERVICE}\`"
+            echo "- Quality gate: hard-corpus RAG + Guardrail passed"
+            echo "- ECR critical vulnerabilities: within threshold"
+            echo "- Production health: passed"
+          } >> "$GITHUB_STEP_SUMMARY"

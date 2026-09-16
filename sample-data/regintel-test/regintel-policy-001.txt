@@ -1,0 +1,18 @@
+RegIntel Test Regulatory Policy 001
+
+Status: Synthetic test document. This is not a real regulation and must not be used as legal or compliance advice.
+
+1. Customer verification
+A regulated institution must verify the identity of a customer before activating a regulated account. The verification record must contain the verification method and completion timestamp.
+
+2. Record retention
+Customer verification records must be retained for seven years after the customer relationship ends.
+
+3. Enhanced review
+A customer classified as high risk must receive an enhanced review before account activation. The enhanced review must be approved by an authorized compliance officer.
+
+4. Periodic review
+Standard-risk customers must be reviewed every twenty-four months. High-risk customers must be reviewed every twelve months.
+
+5. Auditability
+The institution must maintain an auditable history of verification decisions, reviewer identity, approval status, and material changes to customer risk classification.
