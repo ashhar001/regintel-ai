@@ -56,12 +56,15 @@ data "aws_iam_policy_document" "github_plan_extra" {
     effect = "Allow"
 
     actions = [
+      "bedrock:GetDataSource",
       "bedrock:GetGuardrail",
+      "bedrock:GetKnowledgeBase",
       "bedrock:ListTagsForResource",
     ]
 
     resources = [
       "arn:${data.aws_partition.current.partition}:bedrock:${var.aws_region}:${data.aws_caller_identity.current.account_id}:knowledge-base/*",
+      "arn:${data.aws_partition.current.partition}:bedrock:${var.aws_region}:${data.aws_caller_identity.current.account_id}:knowledge-base/*/data-source/*",
       "arn:${data.aws_partition.current.partition}:bedrock:${var.aws_region}:${data.aws_caller_identity.current.account_id}:guardrail/*",
     ]
   }
@@ -76,8 +79,20 @@ data "aws_iam_policy_document" "github_plan_extra" {
     ]
 
     resources = [
-      var.regintel_data_kms_key_arn,
+      "arn:${data.aws_partition.current.partition}:kms:${var.aws_region}:${data.aws_caller_identity.current.account_id}:key/*",
     ]
+
+    condition {
+      test     = "StringEquals"
+      variable = "kms:ViaService"
+      values   = ["bedrock.${var.aws_region}.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "kms:CallerAccount"
+      values   = [data.aws_caller_identity.current.account_id]
+    }
   }
 }
 
