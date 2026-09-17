@@ -36,6 +36,8 @@ def retrieve(
             number_of_results=request.number_of_results,
             search_type=request.search_type,
             filters=request.filters,
+            rerank=request.rerank,
+            rerank_top_k=request.rerank_top_k,
         )
     except BedrockKnowledgeBaseError as exc:
         raise HTTPException(
@@ -61,6 +63,8 @@ def query(
             search_type=request.search_type,
             filters=request.filters,
             session_id=request.session_id,
+            rerank=request.rerank,
+            rerank_top_k=request.rerank_top_k,
         )
     except BedrockKnowledgeBaseError as exc:
         raise HTTPException(

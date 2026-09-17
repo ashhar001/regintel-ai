@@ -18,9 +18,13 @@ from typing import Any
 class EvalConfig:
     search_type: str
     top_k: int
+    rerank: bool = False
+    rerank_top_k: int | None = None
 
     @property
     def name(self) -> str:
+        if self.rerank:
+            return f"{self.search_type.lower()}-rerank-{self.top_k}to{self.rerank_top_k}"
         return f"{self.search_type.lower()}-k{self.top_k}"
 
 
@@ -30,19 +34,50 @@ def parse_matrix(value: str) -> list[EvalConfig]:
         raw = raw.strip()
         if not raw:
             continue
+        parts = raw.split(":")
         try:
-            search_type, top_k = raw.split(":", 1)
+            search_type = parts[0]
             search_type = search_type.upper()
-            top_k_int = int(top_k)
+            top_k_int = int(parts[1])
         except ValueError as exc:
             raise argparse.ArgumentTypeError(
-                "matrix must look like SEMANTIC:3,HYBRID:3,HYBRID:5"
+                "matrix must look like SEMANTIC:3,HYBRID:5,HYBRID:20:RERANK:5"
+            ) from exc
+        except IndexError as exc:
+            raise argparse.ArgumentTypeError(
+                "matrix must look like SEMANTIC:3,HYBRID:5,HYBRID:20:RERANK:5"
             ) from exc
         if search_type not in {"SEMANTIC", "HYBRID"}:
             raise argparse.ArgumentTypeError("search type must be SEMANTIC or HYBRID")
         if not 1 <= top_k_int <= 50:
             raise argparse.ArgumentTypeError("top_k must be between 1 and 50")
-        configs.append(EvalConfig(search_type=search_type, top_k=top_k_int))
+        rerank = False
+        rerank_top_k = None
+        if len(parts) == 4:
+            rerank_label = parts[2].upper()
+            if rerank_label != "RERANK":
+                raise argparse.ArgumentTypeError("rerank matrix entries must use RERANK")
+            rerank = True
+            try:
+                rerank_top_k = int(parts[3])
+            except ValueError as exc:
+                raise argparse.ArgumentTypeError("rerank_top_k must be an integer") from exc
+            if not 1 <= rerank_top_k <= top_k_int:
+                raise argparse.ArgumentTypeError(
+                    "rerank_top_k must be between 1 and top_k"
+                )
+        elif len(parts) != 2:
+            raise argparse.ArgumentTypeError(
+                "matrix must look like SEMANTIC:3,HYBRID:5,HYBRID:20:RERANK:5"
+            )
+        configs.append(
+            EvalConfig(
+                search_type=search_type,
+                top_k=top_k_int,
+                rerank=rerank,
+                rerank_top_k=rerank_top_k,
+            )
+        )
     if not configs:
         raise argparse.ArgumentTypeError("at least one matrix entry is required")
     return configs
@@ -107,6 +142,10 @@ def citation_doc_match(citations: list[dict[str, Any]], expected_document_id: st
         (citation.get("metadata") or {}).get("document_id") == expected_document_id
         for citation in citations
     )
+
+
+def document_ids(items: list[dict[str, Any]]) -> list[str | None]:
+    return [(item.get("metadata") or {}).get("document_id") for item in items]
 
 
 def percentile(values: list[float], p: float) -> float:
@@ -230,7 +269,10 @@ def main() -> None:
                 "number_of_results": config.top_k,
                 "search_type": config.search_type,
                 "filters": case.get("filters", {}),
+                "rerank": config.rerank,
             }
+            if config.rerank:
+                common["rerank_top_k"] = config.rerank_top_k
             retrieve_payload = {"query": case["question"], **common}
             query_payload = {"question": case["question"], **common}
 
@@ -266,6 +308,11 @@ def main() -> None:
                 ),
                 "citation_count": len(citations),
                 "citation_document_match": citation_doc_match(citations, expected_document_id),
+                "retrieval_document_ids": document_ids(results),
+                "citation_document_ids": document_ids(citations),
+                "citation_source_uris": [
+                    citation.get("source_uri") for citation in citations
+                ],
                 "retrieval_latency_ms": retrieval.get("latency_ms", 0),
                 "generation_latency_ms": generation.get("latency_ms", 0),
             }
@@ -274,12 +321,21 @@ def main() -> None:
                 f"[{index:02d}/{len(dataset):02d}] {case['id']}: "
                 f"hit={row['retrieval_hit']} rr={row['reciprocal_rank']:.2f} "
                 f"answer={row['answer_keyword_coverage']:.2f} "
-                f"citation={row['citation_document_match']}"
+                f"citation={row['citation_document_match']} "
+                f"citation_docs={row['citation_document_ids']}"
             )
 
         metrics = summarize(rows)
         report["configurations"].append(
-            {"name": config.name, "search_type": config.search_type, "top_k": config.top_k, "metrics": metrics, "cases": rows}
+            {
+                "name": config.name,
+                "search_type": config.search_type,
+                "top_k": config.top_k,
+                "rerank": config.rerank,
+                "rerank_top_k": config.rerank_top_k,
+                "metrics": metrics,
+                "cases": rows,
+            }
         )
 
     json_path = output_dir / f"local-rag-eval-{timestamp}.json"

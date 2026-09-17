@@ -83,8 +83,8 @@ jobs:
           python scripts/run_local_rag_eval.py \
             --dataset evaluation/datasets/regintel_hard_gold.jsonl \
             --base-url http://127.0.0.1:8000 \
-            --matrix HYBRID:5
-          python scripts/check_release_gate.py
+            --matrix HYBRID:20:RERANK:5
+          python scripts/check_release_gate.py --configuration hybrid-rerank-20to5
 
       - name: Guardrail regression
         run: python scripts/check_guardrail_release.py --base-url http://127.0.0.1:8000
