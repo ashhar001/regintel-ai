@@ -118,9 +118,10 @@ resource "aws_api_gateway_deployment" "stage5b" {
 }
 
 resource "aws_api_gateway_stage" "stage5b" {
-  rest_api_id   = aws_api_gateway_rest_api.stage5b.id
-  deployment_id = aws_api_gateway_deployment.stage5b.id
-  stage_name    = var.stage5b_api_stage_name
+  rest_api_id          = aws_api_gateway_rest_api.stage5b.id
+  deployment_id        = aws_api_gateway_deployment.stage5b.id
+  stage_name           = var.stage5b_api_stage_name
+  xray_tracing_enabled = true
 
   tags = {
     Stage = "5b-production-runtime"
