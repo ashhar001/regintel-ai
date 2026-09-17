@@ -1,10 +1,10 @@
 locals {
-  stage7c_availability_slo_percent       = 99.9
-  stage7c_availability_error_budget_pct  = 100 - local.stage7c_availability_slo_percent
-  stage7c_fast_burn_rate                 = 14.4
-  stage7c_slow_burn_rate                 = 6.0
-  stage7c_fast_burn_threshold_pct        = local.stage7c_availability_error_budget_pct * local.stage7c_fast_burn_rate
-  stage7c_slow_burn_threshold_pct        = local.stage7c_availability_error_budget_pct * local.stage7c_slow_burn_rate
+  stage7c_availability_slo_percent      = 99.9
+  stage7c_availability_error_budget_pct = 100 - local.stage7c_availability_slo_percent
+  stage7c_fast_burn_rate                = 14.4
+  stage7c_slow_burn_rate                = 6.0
+  stage7c_fast_burn_threshold_pct       = local.stage7c_availability_error_budget_pct * local.stage7c_fast_burn_rate
+  stage7c_slow_burn_threshold_pct       = local.stage7c_availability_error_budget_pct * local.stage7c_slow_burn_rate
 
   stage7c_availability_windows = {
     fast_5m = {
