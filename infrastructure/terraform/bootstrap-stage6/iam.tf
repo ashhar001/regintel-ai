@@ -25,6 +25,7 @@ data "aws_iam_policy_document" "github_plan_extra" {
         "${var.state_key}.tflock",
       ]
     }
+
   }
 
   statement {
@@ -48,6 +49,21 @@ data "aws_iam_policy_document" "github_plan_extra" {
     effect    = "Allow"
     actions   = ["aoss:APIAccessAll"]
     resources = ["*"]
+  }
+
+  statement {
+    sid    = "BedrockTerraformRead"
+    effect = "Allow"
+
+    actions = [
+      "bedrock:GetGuardrail",
+      "bedrock:ListTagsForResource",
+    ]
+
+    resources = [
+      "arn:${data.aws_partition.current.partition}:bedrock:${var.aws_region}:${data.aws_caller_identity.current.account_id}:knowledge-base/*",
+      "arn:${data.aws_partition.current.partition}:bedrock:${var.aws_region}:${data.aws_caller_identity.current.account_id}:guardrail/*",
+    ]
   }
 }
 
