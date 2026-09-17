@@ -6,7 +6,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 
 from app.core.config import Settings
-from app.core.request_context import get_request_id
+from app.core.request_context import get_request_id, get_trace_id
 
 MetricValue = tuple[int | float, str]
 
@@ -57,6 +57,10 @@ class EmbeddedMetrics:
         request_id = get_request_id()
         if request_id and "request_id" not in payload:
             payload["request_id"] = request_id
+
+        trace_id = get_trace_id()
+        if trace_id and "trace_id" not in payload:
+            payload["trace_id"] = trace_id
 
         print(json.dumps(payload, separators=(",", ":"), sort_keys=True), flush=True)
 
