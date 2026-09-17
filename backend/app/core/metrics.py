@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import json
 import time
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Mapping
 
 from app.core.config import Settings
 
