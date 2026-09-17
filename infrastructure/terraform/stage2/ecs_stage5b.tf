@@ -114,6 +114,9 @@ resource "aws_ecs_task_definition" "stage5b_api" {
         { name = "BEDROCK_RERANK_MODEL_ARN", value = local.rerank_model_arn },
         { name = "BEDROCK_GUARDRAIL_ID", value = aws_bedrock_guardrail.regintel.guardrail_id },
         { name = "BEDROCK_GUARDRAIL_VERSION", value = aws_bedrock_guardrail_version.regintel.version },
+        { name = "OBSERVABILITY_METRICS_ENABLED", value = "true" },
+        { name = "OBSERVABILITY_METRICS_NAMESPACE", value = "RegIntel/RAG" },
+        { name = "OBSERVABILITY_SERVICE_NAME", value = "regintel-api" },
       ]
 
       healthCheck = {
