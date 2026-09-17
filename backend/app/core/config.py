@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     bedrock_guardrail_id: str | None = None
     bedrock_guardrail_version: str | None = None
 
-    observability_metrics_enabled: bool = False
+    observability_metrics_enabled: bool = True
     observability_metrics_namespace: str = "RegIntel/RAG"
     observability_service_name: str = "regintel-api"
 
