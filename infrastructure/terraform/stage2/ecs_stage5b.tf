@@ -77,6 +77,7 @@ resource "aws_lb_listener" "stage5b" {
 
 resource "aws_ecs_task_definition" "stage5b_api" {
   family                   = "${local.name_prefix}-api"
+  skip_destroy             = true
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
   cpu                      = tostring(var.stage5b_task_cpu)

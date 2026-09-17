@@ -1,3 +1,5 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.core.config import Settings, get_settings
@@ -6,15 +8,20 @@ from app.services.bedrock_runtime import BedrockInvocationError, BedrockRuntimeS
 
 router = APIRouter(prefix="/v1", tags=["chat"])
 
+SettingsDep = Annotated[Settings, Depends(get_settings)]
 
-def get_bedrock_service(settings: Settings = Depends(get_settings)) -> BedrockRuntimeService:
+
+def get_bedrock_service(settings: SettingsDep) -> BedrockRuntimeService:
     return BedrockRuntimeService(settings)
+
+
+BedrockServiceDep = Annotated[BedrockRuntimeService, Depends(get_bedrock_service)]
 
 
 @router.post("/chat", response_model=ChatResponse)
 def chat(
     request: ChatRequest,
-    service: BedrockRuntimeService = Depends(get_bedrock_service),
+    service: BedrockServiceDep,
 ) -> ChatResponse:
     try:
         result = service.ask(request.question)

@@ -7,7 +7,6 @@ from datetime import datetime, timezone
 
 import boto3
 
-
 RETRIEVE_METRICS = ["Builtin.ContextRelevance", "Builtin.ContextCoverage"]
 RAG_METRICS = [
     "Builtin.Correctness",
