@@ -142,6 +142,12 @@ resource "aws_ecs_task_definition" "stage5b_api" {
     }
   ])
 
+  lifecycle {
+    # Stage 6 GitHub CD promotes task-definition revisions and immutable images.
+    # Terraform owns the initial definition but must not roll production back.
+    ignore_changes = [container_definitions]
+  }
+
   tags = {
     Stage = "5b-production-runtime"
   }

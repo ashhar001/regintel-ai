@@ -8,6 +8,7 @@ from botocore.config import Config
 from botocore.exceptions import BotoCoreError, ClientError
 
 from app.core.config import Settings
+from app.core.metrics import metrics_from_settings
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +23,7 @@ class KnowledgeBaseResult:
     session_id: str | None
     latency_ms: int
     citations: list[dict[str, Any]]
+    guardrail_intervened: bool = False
 
 
 @dataclass(frozen=True)
@@ -33,6 +35,7 @@ class KnowledgeBaseRetrievalResult:
 class BedrockKnowledgeBaseService:
     def __init__(self, settings: Settings, client: Any | None = None) -> None:
         self.settings = settings
+        self.metrics = metrics_from_settings(settings)
         self.client = client or boto3.client(
             "bedrock-agent-runtime",
             region_name=settings.aws_region,
@@ -155,6 +158,16 @@ class BedrockKnowledgeBaseService:
                 },
             )
         except (ClientError, BotoCoreError) as exc:
+            latency_ms = int((time.perf_counter() - started) * 1000)
+            self.metrics.emit(
+                operation="rag_retrieve",
+                metrics={
+                    "RAGRequestCount": (1, "Count"),
+                    "RAGErrorCount": (1, "Count"),
+                    "RetrievalLatencyMs": (latency_ms, "Milliseconds"),
+                },
+                properties={"search_type": search_type, "rerank": rerank},
+            )
             logger.exception("bedrock_kb_retrieve_failed")
             raise BedrockKnowledgeBaseError("Knowledge Base retrieval failed") from exc
 
@@ -170,6 +183,16 @@ class BedrockKnowledgeBaseService:
                 }
             )
 
+        self.metrics.emit(
+            operation="rag_retrieve",
+            metrics={
+                "RAGRequestCount": (1, "Count"),
+                "RAGErrorCount": (0, "Count"),
+                "RetrievalLatencyMs": (latency_ms, "Milliseconds"),
+                "RetrievalResultCount": (len(results), "Count"),
+            },
+            properties={"search_type": search_type, "rerank": rerank},
+        )
         logger.info(
             "bedrock_kb_retrieve_succeeded",
             extra={
@@ -269,6 +292,16 @@ $output_format_instructions$
         try:
             response = self.client.retrieve_and_generate(**request)
         except (ClientError, BotoCoreError) as exc:
+            latency_ms = int((time.perf_counter() - started) * 1000)
+            self.metrics.emit(
+                operation="rag_query",
+                metrics={
+                    "RAGRequestCount": (1, "Count"),
+                    "RAGErrorCount": (1, "Count"),
+                    "RAGLatencyMs": (latency_ms, "Milliseconds"),
+                },
+                properties={"search_type": search_type, "rerank": rerank},
+            )
             logger.exception("bedrock_kb_retrieve_and_generate_failed")
             raise BedrockKnowledgeBaseError("Knowledge Base query failed") from exc
 
@@ -295,6 +328,18 @@ $output_format_instructions$
                 )
 
         answer = response.get("output", {}).get("text", "").strip()
+        guardrail_intervened = response.get("guardrailAction") == "INTERVENED"
+        self.metrics.emit(
+            operation="rag_query",
+            metrics={
+                "RAGRequestCount": (1, "Count"),
+                "RAGErrorCount": (0, "Count"),
+                "RAGLatencyMs": (latency_ms, "Milliseconds"),
+                "CitationCount": (len(citations), "Count"),
+                "GuardrailBlockedCount": (1 if guardrail_intervened else 0, "Count"),
+            },
+            properties={"search_type": search_type, "rerank": rerank},
+        )
         logger.info(
             "bedrock_kb_retrieve_and_generate_succeeded",
             extra={
@@ -304,6 +349,7 @@ $output_format_instructions$
                 "search_type": search_type,
                 "rerank": rerank,
                 "rerank_top_k": rerank_top_k,
+                "guardrail_intervened": guardrail_intervened,
             },
         )
 
@@ -312,4 +358,5 @@ $output_format_instructions$
             session_id=response.get("sessionId"),
             latency_ms=latency_ms,
             citations=citations,
+            guardrail_intervened=guardrail_intervened,
         )
