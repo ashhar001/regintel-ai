@@ -1,96 +1,97 @@
 # RegIntel AI — Production Amazon Bedrock RAG Platform
 
-A production-oriented financial regulatory intelligence platform built to demonstrate Amazon Bedrock RAG engineering end to end.
+RegIntel AI is a production-oriented financial/regulatory intelligence platform built on Amazon Bedrock. It demonstrates the full lifecycle of an enterprise RAG system: ingestion, retrieval, grounded generation, security, CI/CD, evaluation, observability, SLOs, tracing, and incident diagnostics.
 
-## Current status
-- Stage 0: complete — product/NFR/architecture contract
-- Stage 1: complete — FastAPI + Bedrock Converse foundation
-- Stage 2: implemented — Terraform RAG foundation + Bedrock Knowledge Base API integration
-- Stage 3+: delivered incrementally after each previous stage passes its exit criteria
+## Status
 
-## Stage 2 architecture
+**RegIntel AI v1 production platform: validated.**
+
+Completed platform capabilities:
+
+- FastAPI application runtime on ECS Fargate
+- Amazon Bedrock Knowledge Bases
+- Titan Text Embeddings V2
+- OpenSearch Serverless vector search
+- semantic and hybrid retrieval
+- optional Cohere Rerank v3.5
+- Amazon Nova Lite grounded generation
+- citations and metadata filtering
+- event-driven ingestion with EventBridge, SQS, Pipes, Step Functions and Lambda
+- Bedrock Guardrails
+- Cognito authentication
+- AWS WAF
+- API Gateway REST + VPC Link + internal NLB
+- private ECS networking with no public IP
+- GitHub Actions CI/CD with AWS OIDC
+- immutable ECR commit-SHA image promotion
+- RAG quality release gates
+- CloudWatch EMF application metrics
+- request correlation
+- 99.9% availability SLO and error-budget burn alerts
+- API Gateway X-Ray tracing
+- incident-diagnostics dashboards and saved Logs Insights queries
+
+See [`docs/12-v1-production-validation.md`](docs/12-v1-production-validation.md) for the final production validation record.
+
+## Production architecture
 
 ```text
-Synthetic / regulatory documents + metadata sidecars
-                      |
-                      v
-              S3 raw/documents
-                      |
-                      v
-            Bedrock Knowledge Base
-                      |
-       Titan Text Embeddings V2
-                      |
-                      v
-         OpenSearch Serverless
-          FAISS vector index
-                      |
-          +-----------+-----------+
-          |                       |
-          v                       v
-/v1/rag/retrieve          /v1/rag/query
-retrieval + scores        RetrieveAndGenerate
-metadata + source URI     grounded answer + citations
+Client
+  |
+  v
+AWS WAF
+  |
+  v
+API Gateway REST API + Cognito + X-Ray
+  |
+  v
+VPC Link
+  |
+  v
+Internal Network Load Balancer
+  |
+  v
+ECS Fargate / FastAPI
+(private subnets, no public IP)
+  |
+  +--> Bedrock Knowledge Base / RetrieveAndGenerate
+  |       |
+  |       +--> OpenSearch Serverless vector index
+  |       +--> Titan Text Embeddings V2
+  |       +--> Cohere Rerank v3.5 when enabled
+  |       +--> Amazon Nova Lite
+  |
+  +--> Bedrock Guardrails
 ```
 
-Stage 2 keeps retrieval and generation as separate application paths. This lets later evaluation measure retrieval quality independently from generation quality.
+### Ingestion
 
-## Infrastructure created in Stage 2
-- Customer-managed KMS key for S3 data encryption
-- Private, versioned raw / processed / evaluation S3 buckets
-- OpenSearch Serverless `VECTORSEARCH` collection
-- FAISS k-NN index with Titan V2 1,024-dimensional vectors
-- Explicit filterable regulatory metadata fields
-- Least-privilege Bedrock Knowledge Base service role
-- Bedrock Knowledge Base using Titan Text Embeddings V2
-- S3 Knowledge Base data source with baseline fixed-size chunking
-
-The Stage 2 development collection permits public network reachability so Terraform on a developer laptop can create the OpenSearch data-plane index. IAM and OpenSearch data policies still control authorization. VPC-only connectivity is a later hardening step.
-
-## Prerequisites
-- Python 3.12+
-- Terraform 1.8+
-- AWS CLI configured
-- Amazon Bedrock model access/permissions
-- Docker (optional)
-
-## Run the API locally
-
-```bash
-cp .env.example .env
-python3 -m venv .venv
-source .venv/bin/activate
-pip install --upgrade pip
-pip install -e './backend[dev]'
-uvicorn app.main:app --app-dir backend --reload --port 8000
+```text
+S3 incoming
+  -> EventBridge
+  -> SQS
+  -> EventBridge Pipes
+  -> Step Functions
+  -> validation / hashing / idempotency / promotion
+  -> Bedrock Knowledge Base ingestion
+  -> OpenSearch Serverless
 ```
 
-If you use a named local AWS CLI profile:
+### Observability
 
-```bash
-export AWS_PROFILE=tenderly
-export AWS_REGION=us-east-1
-aws sts get-caller-identity
+```text
+API Gateway X-Ray
+      |
+      v
+request_id + trace_id
+      |
+FastAPI structured logs + CloudWatch EMF
+      |
+      +--> SRE dashboard
+      +--> SLO dashboard
+      +--> incident diagnostics
+      +--> alarms / burn-rate composites / SNS
 ```
-
-## Deploy Stage 2
-
-Follow the full runbook:
-
-`docs/04-stage-2-runbook.md`
-
-The short path is:
-
-```bash
-cd infrastructure/terraform/stage2
-cp terraform.tfvars.example terraform.tfvars
-terraform init
-terraform validate
-terraform plan -out=stage2.tfplan
-terraform apply stage2.tfplan
-```
-
-Then upload the synthetic validation corpus, run a Knowledge Base sync, populate the two Stage 2 environment variables, and test the RAG endpoints.
 
 ## RAG endpoints
 
@@ -110,8 +111,6 @@ Then upload the synthetic validation corpus, run a Knowledge Base sync, populate
 }
 ```
 
-Returns retrieved chunks, relevance scores, source URI and metadata.
-
 ### Retrieve + generate
 
 `POST /v1/rag/query`
@@ -119,7 +118,7 @@ Returns retrieved chunks, relevance scores, source URI and metadata.
 ```json
 {
   "question": "How long must customer verification records be retained?",
-  "number_of_results": 8,
+  "number_of_results": 5,
   "search_type": "HYBRID",
   "filters": {
     "regulator": "REGINTEL_TEST",
@@ -128,24 +127,102 @@ Returns retrieved chunks, relevance scores, source URI and metadata.
 }
 ```
 
-Returns a grounded answer, Bedrock session ID, latency and citations.
+The response contains a grounded answer, Bedrock session ID, latency and citations.
+
+## Retrieval and quality contract
+
+Frozen default retrieval mode:
+
+- search type: `HYBRID`
+- top K: `5`
+- reranking: optional
+
+Release thresholds:
+
+| Metric | Required |
+| --- | ---: |
+| Hit@K | 1.00 |
+| MRR | >= 0.70 |
+| Answer coverage | >= 0.95 |
+| Citation document accuracy | >= 0.875 |
+
+Changes to retrieval, prompts, reranking or models must pass the versioned evaluation corpus before deployment.
+
+## CI/CD
+
+The production deployment pipeline performs:
+
+1. lint and unit tests
+2. live candidate API startup against real Bedrock services
+3. hard-corpus RAG regression
+4. guardrail regression
+5. immutable container build
+6. ECR critical-vulnerability gate
+7. ECS task-definition revision deployment
+8. ECS service stability check
+9. public health check
+
+Terraform PR plans are separately checked for destructive resource actions.
+
+## SRE objectives
+
+- availability SLO: **99.9% successful RAG queries**
+- error budget: **0.1%**
+- RAG latency objective: **p95 < 5 seconds**
+
+Fast and slow multi-window burn-rate alarms route through CloudWatch composite alarms to the SRE SNS topic.
+
+## Run locally
+
+```bash
+export AWS_PROFILE=tenderly
+export AWS_REGION=us-east-1
+
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -e './backend[dev]'
+uvicorn app.main:app --app-dir backend --reload --host 0.0.0.0 --port 8000
+```
+
+Verify AWS authentication first:
+
+```bash
+aws sts get-caller-identity
+```
 
 ## Tests
 
 ```bash
-pytest backend/tests -q
-ruff check backend
+ruff check backend scripts
+pytest -q backend/tests
 ```
 
-## Cost hygiene
+## Terraform safety
 
-OpenSearch Serverless is continuously billed. Destroy development infrastructure when you are not using it:
+Do not apply or destroy infrastructure blindly. Create a saved plan and inspect destructive actions first:
 
 ```bash
-terraform -chdir=infrastructure/terraform/stage2 destroy
+terraform plan -out=change.tfplan
+
+terraform show -json change.tfplan | jq -r '
+.resource_changes[]
+| select(.change.actions | index("delete"))
+| "\(.address) => \(.change.actions)"
+'
 ```
 
-## Engineering principle
-Every RAG optimization will be measured against a versioned evaluation dataset. Semantic search, hybrid retrieval, chunking, reranking and model changes will not be called improvements until the metrics support the claim.
+For normal additive changes, the destructive check should produce no output.
 
-See `docs/02-roadmap.md` for the full delivery sequence.
+The ECS ownership boundary is deliberate: Terraform owns infrastructure; GitHub CD owns promoted ECS task-definition revisions and immutable images. Terraform must not be used to roll back a CD-promoted application revision.
+
+## Documentation
+
+- [`docs/01-architecture.md`](docs/01-architecture.md) — production architecture
+- [`docs/02-roadmap.md`](docs/02-roadmap.md) — completed v1 roadmap and future expansion
+- [`docs/10-stage-6-cicd-quality-gates.md`](docs/10-stage-6-cicd-quality-gates.md) — deployment quality gates
+- [`docs/11-stage-7-sre-slo-runbook.md`](docs/11-stage-7-sre-slo-runbook.md) — SLOs and incident response
+- [`docs/12-v1-production-validation.md`](docs/12-v1-production-validation.md) — final v1 validation record
+
+## Engineering principle
+
+A RAG change is not an improvement until it is measured against the versioned evaluation corpus and passes the release thresholds.
