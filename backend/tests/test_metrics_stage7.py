@@ -38,8 +38,8 @@ def test_embedded_metrics_emits_cloudwatch_emf(capsys):
     }
 
 
-def test_metrics_disabled_by_default(capsys):
-    settings = Settings(app_env="test")
+def test_metrics_can_be_disabled(capsys):
+    settings = Settings(app_env="test", observability_metrics_enabled=False)
     metrics = metrics_from_settings(settings)
 
     metrics.emit(
