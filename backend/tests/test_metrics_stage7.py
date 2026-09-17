@@ -2,6 +2,7 @@ import json
 
 from app.core.config import Settings
 from app.core.metrics import EmbeddedMetrics, metrics_from_settings
+from app.core.request_context import reset_request_id, set_request_id
 
 
 def test_embedded_metrics_emits_cloudwatch_emf(capsys):
@@ -36,6 +37,28 @@ def test_embedded_metrics_emits_cloudwatch_emf(capsys):
         "RAGRequestCount",
         "RAGLatencyMs",
     }
+
+
+def test_embedded_metrics_adds_request_id_as_property(capsys):
+    metrics = EmbeddedMetrics(
+        namespace="RegIntel/RAG",
+        service="regintel-api",
+        environment="test",
+        enabled=True,
+    )
+    token = set_request_id("request-123")
+    try:
+        metrics.emit(
+            operation="rag_query",
+            metrics={"RAGRequestCount": (1, "Count")},
+        )
+    finally:
+        reset_request_id(token)
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["request_id"] == "request-123"
+    dimensions = payload["_aws"]["CloudWatchMetrics"][0]["Dimensions"]
+    assert "request_id" not in dimensions[0]
 
 
 def test_metrics_can_be_disabled(capsys):
