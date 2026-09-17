@@ -73,3 +73,8 @@ variable "github_repository_id" {
   description = "Stable numeric GitHub repository ID used in customized OIDC subject claims."
   default     = null
 }
+
+variable "regintel_data_kms_key_arn" {
+  type        = string
+  description = "KMS key ARN used to encrypt the RegIntel Bedrock Guardrail."
+}

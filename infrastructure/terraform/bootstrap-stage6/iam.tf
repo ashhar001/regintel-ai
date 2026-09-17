@@ -161,6 +161,16 @@ data "aws_iam_policy_document" "github_deploy" {
       "arn:${data.aws_partition.current.partition}:kms:${var.aws_region}:${data.aws_caller_identity.current.account_id}:key/*",
     ]
   }
+
+  statement {
+    sid     = "DecryptRegIntelGuardrailKey"
+    effect  = "Allow"
+    actions = ["kms:Decrypt"]
+
+    resources = [
+      var.regintel_data_kms_key_arn,
+    ]
+  }
 }
 
 resource "aws_iam_role_policy" "github_deploy" {
