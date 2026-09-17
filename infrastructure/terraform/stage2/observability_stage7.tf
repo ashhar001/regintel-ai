@@ -100,9 +100,9 @@ resource "aws_cloudwatch_dashboard" "stage7_sre" {
           region = var.aws_region
           period = 300
           metrics = [
-            [local.stage7_metrics_namespace, "RAGLatencyMs", "Service", local.stage7_service_name, "Environment", var.environment, "Operation", "rag_query", { stat = "p50" }],
-            ["...", { stat = "p95" }],
-            ["...", { stat = "p99" }],
+            [local.stage7_metrics_namespace, "RAGLatencyMs", "Service", local.stage7_service_name, "Environment", var.environment, "Operation", "rag_query", { stat = "p50", label = "p50" }],
+            [local.stage7_metrics_namespace, "RAGLatencyMs", "Service", local.stage7_service_name, "Environment", var.environment, "Operation", "rag_query", { stat = "p95", label = "p95" }],
+            [local.stage7_metrics_namespace, "RAGLatencyMs", "Service", local.stage7_service_name, "Environment", var.environment, "Operation", "rag_query", { stat = "p99", label = "p99" }],
           ]
         }
       },
