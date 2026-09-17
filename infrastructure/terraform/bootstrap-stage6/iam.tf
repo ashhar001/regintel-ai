@@ -65,6 +65,20 @@ data "aws_iam_policy_document" "github_plan_extra" {
       "arn:${data.aws_partition.current.partition}:bedrock:${var.aws_region}:${data.aws_caller_identity.current.account_id}:guardrail/*",
     ]
   }
+
+  statement {
+    sid    = "ReadEncryptedGuardrailKey"
+    effect = "Allow"
+
+    actions = [
+      "kms:Decrypt",
+      "kms:DescribeKey",
+    ]
+
+    resources = [
+      var.regintel_data_kms_key_arn,
+    ]
+  }
 }
 
 resource "aws_iam_role_policy" "github_plan_extra" {
@@ -162,15 +176,6 @@ data "aws_iam_policy_document" "github_deploy" {
     ]
   }
 
-  statement {
-    sid     = "DecryptRegIntelGuardrailKey"
-    effect  = "Allow"
-    actions = ["kms:Decrypt"]
-
-    resources = [
-      var.regintel_data_kms_key_arn,
-    ]
-  }
 }
 
 resource "aws_iam_role_policy" "github_deploy" {
