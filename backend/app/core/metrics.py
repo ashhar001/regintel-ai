@@ -53,16 +53,13 @@ class EmbeddedMetrics:
         if properties:
             payload.update({key: value for key, value in properties.items() if value is not None})
 
-        # EMF is intentionally written directly to stdout. The ECS awslogs driver
-        # forwards this JSON event to CloudWatch Logs, where CloudWatch extracts
-        # the embedded metrics without requiring cloudwatch:PutMetricData.
         print(json.dumps(payload, separators=(",", ":"), sort_keys=True), flush=True)
 
 
 def metrics_from_settings(settings: Settings) -> EmbeddedMetrics:
     return EmbeddedMetrics(
-        namespace=settings.observability_metrics_namespace,
-        service=settings.observability_service_name,
-        environment=settings.app_env,
-        enabled=settings.observability_metrics_enabled,
+        namespace=getattr(settings, "observability_metrics_namespace", "RegIntel/RAG"),
+        service=getattr(settings, "observability_service_name", "regintel-api"),
+        environment=getattr(settings, "app_env", "dev"),
+        enabled=getattr(settings, "observability_metrics_enabled", False),
     )
