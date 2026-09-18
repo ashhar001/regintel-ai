@@ -1,0 +1,44 @@
+name: Feature request
+description: Suggest a new capability or example for the reference architecture.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: What would this help users do?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the behavior, interface, or documentation you want added.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Backend API
+        - Terraform / AWS infrastructure
+        - CI/CD
+        - Evaluation / release gates
+        - Observability / SRE
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Constraints and tradeoffs
+      description: Note security, cost, compatibility, migration, or operational concerns.
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: What would make this complete?

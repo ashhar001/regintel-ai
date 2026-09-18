@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security reports
+    url: https://github.com/ashhar001/regintel-ai/security
+    about: Please report suspected vulnerabilities privately. Do not open a public issue for security reports.
