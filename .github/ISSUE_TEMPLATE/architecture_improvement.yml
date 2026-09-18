@@ -1,0 +1,44 @@
+name: Architecture improvement
+description: Propose an infrastructure, security, reliability, or design improvement.
+title: "[Architecture]: "
+labels:
+  - architecture
+body:
+  - type: textarea
+    id: current
+    attributes:
+      label: Current architecture
+      description: What exists today, and where is the limitation?
+    validations:
+      required: true
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Proposed improvement
+      description: Describe the target architecture or design change.
+    validations:
+      required: true
+  - type: dropdown
+    id: impact
+    attributes:
+      label: Primary impact
+      options:
+        - Security
+        - Reliability
+        - Cost
+        - Operability
+        - Developer experience
+        - Performance
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: migration
+    attributes:
+      label: Migration and compatibility
+      description: Include Terraform state moves, deployment sequencing, or breaking-change risks if relevant.
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation plan
+      description: How should this be tested or proven safe?

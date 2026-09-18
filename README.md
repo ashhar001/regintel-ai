@@ -2,6 +2,8 @@
 
 RegIntel AI is a production-oriented financial/regulatory intelligence platform built on Amazon Bedrock. It demonstrates the full lifecycle of an enterprise RAG system: ingestion, retrieval, grounded generation, security, CI/CD, evaluation, observability, SLOs, tracing, and incident diagnostics.
 
+This project is available under the Apache License 2.0 and is intended to be reusable as a baseline reference architecture. See [`CONTRIBUTING.md`](CONTRIBUTING.md), [`ROADMAP.md`](ROADMAP.md), and [`SECURITY.md`](SECURITY.md) before adapting or contributing changes.
+
 ## Status
 
 **RegIntel AI v1 production platform: validated.**
@@ -218,6 +220,9 @@ The ECS ownership boundary is deliberate: Terraform owns infrastructure; GitHub 
 ## Documentation
 
 - [`docs/01-architecture.md`](docs/01-architecture.md) — production architecture
+- [`ROADMAP.md`](ROADMAP.md) — public roadmap and contribution areas
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — contribution workflow
+- [`SECURITY.md`](SECURITY.md) — security reporting and repository hygiene
 - [`docs/02-roadmap.md`](docs/02-roadmap.md) — completed v1 roadmap and future expansion
 - [`docs/10-stage-6-cicd-quality-gates.md`](docs/10-stage-6-cicd-quality-gates.md) — deployment quality gates
 - [`docs/11-stage-7-sre-slo-runbook.md`](docs/11-stage-7-sre-slo-runbook.md) — SLOs and incident response
