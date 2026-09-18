@@ -42,6 +42,20 @@ data "aws_iam_policy_document" "github_plan_extra" {
     ]
   }
 
+  statement {
+    sid    = "TerraformStateKMS"
+    effect = "Allow"
+    actions = [
+      "kms:Decrypt",
+      "kms:DescribeKey",
+      "kms:Encrypt",
+      "kms:GenerateDataKey",
+      "kms:ReEncryptFrom",
+      "kms:ReEncryptTo",
+    ]
+    resources = [aws_kms_key.terraform_state.arn]
+  }
+
   # Required by the OpenSearch Terraform provider to inspect the AOSS vector index.
   # Data-plane access is separately granted by a Stage 6 AOSS data-access policy.
   statement {
