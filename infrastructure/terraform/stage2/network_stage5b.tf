@@ -59,10 +59,11 @@ resource "aws_security_group" "stage5b_endpoints" {
   }
 
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    description = "HTTPS responses within runtime VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = [var.stage5b_vpc_cidr]
   }
 
   tags = {
@@ -87,11 +88,19 @@ resource "aws_security_group" "stage5b_ecs" {
   # There is no internet/NAT route. HTTPS egress can reach only configured VPC
   # endpoints plus AWS services reachable through the S3 gateway endpoint.
   egress {
-    description = "HTTPS to AWS private endpoints"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    description     = "HTTPS to interface VPC endpoints"
+    from_port       = 443
+    to_port         = 443
+    protocol        = "tcp"
+    security_groups = [aws_security_group.stage5b_endpoints.id]
+  }
+
+  egress {
+    description     = "HTTPS to S3 gateway endpoint"
+    from_port       = 443
+    to_port         = 443
+    protocol        = "tcp"
+    prefix_list_ids = [aws_vpc_endpoint.stage5b_s3.prefix_list_id]
   }
 
   tags = {

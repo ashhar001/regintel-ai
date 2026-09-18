@@ -32,7 +32,7 @@ locals {
 
 resource "aws_sns_topic" "stage7c_sre_alerts" {
   name              = "${local.name_prefix}-sre-alerts"
-  kms_master_key_id = "alias/aws/sns"
+  kms_master_key_id = aws_kms_key.data.arn
 
   tags = {
     Stage = "7c-slo-error-budgets"

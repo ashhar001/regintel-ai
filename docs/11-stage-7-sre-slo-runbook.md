@@ -129,7 +129,7 @@ aws logs filter-log-events \
 Validate the public edge trace path:
 
 ```bash
-curl -si 'https://bsx97wn0ze.execute-api.us-east-1.amazonaws.com/prod/health' \
+curl -si 'https://<api-id>.execute-api.<region>.amazonaws.com/prod/health' \
   | grep -Ei 'HTTP/|x-request-id|x-trace-id'
 ```
 

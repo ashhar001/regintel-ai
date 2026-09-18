@@ -6,6 +6,8 @@ __pycache__/
 .env
 *.pyc
 .DS_Store
+backend/build/
+backend/*.egg-info/
 coverage.xml
 htmlcov/
 terraform.tfstate*
@@ -20,7 +22,7 @@ infrastructure/terraform/stage2/terraform.tfvars
 infrastructure/terraform/bootstrap-stage6/terraform.tfvars
 infrastructure/terraform/stage2/state-backups/
 
-evaluation/results/*-latest.json
-evaluation/results/*-latest.md
+evaluation/results/*.json
+evaluation/results/*.md
 
 infrastructure/terraform/stage2/terraform-state-pre-stage6-backup.json
