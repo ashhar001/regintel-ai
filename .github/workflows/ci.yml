@@ -81,3 +81,41 @@ jobs:
           tags: regintel-ci:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  security:
+    name: Security scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+
+      - name: Secret scan
+        run: |
+          docker run --rm \
+            -v "$PWD:/repo:ro" \
+            ghcr.io/gitleaks/gitleaks:latest \
+            detect --source=/repo --no-git --redact --verbose
+
+      - name: Python dependency audit
+        run: |
+          python -m pip install --upgrade pip pip-audit
+          python -m pip install './backend'
+          pip-audit --local
+
+      - name: Filesystem and IaC scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret,misconfig
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          skip-dirs: .git,.venv,infrastructure/terraform/stage2/.venv,infrastructure/terraform/stage2/.terraform,infrastructure/terraform/bootstrap-stage6/.terraform
+          exit-code: '1'
